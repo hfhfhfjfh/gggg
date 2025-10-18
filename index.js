@@ -65,7 +65,11 @@ async function processUser(uid, userData, now) {
     speedBoost = await getActiveReferralCount(userData.referralCode) * BOOST_PER_REFERRAL;
   }
 
-  const coinsPerMinute = (BASE_COINS_PER_HOUR + speedBoost) / 60.0;
+  // ✅ Include user’s custom boostRate if available
+  const boostRate = Number(userData.boostRate) || 0.0;
+  const totalBoost = speedBoost + boostRate;
+
+  const coinsPerMinute = (BASE_COINS_PER_HOUR + totalBoost) / 60.0;
   const coinsToAdd = elapsedMinutes * coinsPerMinute;
   const prevBalance = Number(userData.balance) || 0;
   const newBalance = prevBalance + coinsToAdd;
@@ -77,7 +81,7 @@ async function processUser(uid, userData, now) {
   });
 
   console.log(
-    `User ${uid}: +${coinsToAdd.toFixed(5)} coins (boost: ${speedBoost.toFixed(2)}), minutes: ${elapsedMinutes}, mining ${isMiningDone ? "ended" : "continues"}.`
+    `User ${uid}: +${coinsToAdd.toFixed(5)} coins (boost: ${totalBoost.toFixed(2)} [ref:${speedBoost.toFixed(2)}, rate:${boostRate.toFixed(2)}]), minutes: ${elapsedMinutes}, mining ${isMiningDone ? "ended" : "continues"}.`
   );
 }
 
